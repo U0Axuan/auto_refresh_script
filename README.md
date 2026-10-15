@@ -1,138 +1,228 @@
-# 智能定时刷新器 - Violentmonkey脚本
+# 智能定时刷新器 · Auto Refresh Script
 
-一个功能完整、界面美观的网页自动刷新工具，采用Material Design 3设计规范。
+一个功能完整、界面美观的网页自动刷新工具，采用 Material Design 3 设计规范。
 
-## 📋 功能特性
+[![Version](https://img.shields.io/badge/version-2.0.0-6750a4)](https://github.com/U0Axuan/auto_refresh_script/releases)
+[![License](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
+[![Userscript](https://img.shields.io/badge/userscript-violentmonkey-orange)](https://violentmonkey.github.io/)
+[![JS Standard](https://img.shields.io/badge/style-ES2022-yellow)](https://262.ecma-international.org/13.0/)
 
-### 🎯 核心功能
-- **智能定时刷新**：支持自定义刷新间隔（1-3600秒）
-- **精确控制**：设置最大运行次数，避免无限刷新
-- **多标签页支持**：可选择刷新当前标签页或同域名所有标签页
-- **实时状态显示**：显示运行状态、刷新次数和进度条
+> v2.0.0 是对 v1.x 的一次彻底重构。修复了多个 P0 Bug、把单文件拆为清晰的逻辑模块、加了 a11y 与默认禁用策略、引入 schema 化存储与迁移机制。详见 [CHANGELOG](CHANGELOG.md)。
 
-### 🎨 界面设计
-- **Material Design 3**：遵循最新设计规范
-- **可拖拽面板**：随意移动到合适位置
-- **可最小化**：不占用过多屏幕空间
-- **响应式布局**：适配不同屏幕尺寸
-- **优雅动画**：流畅的交互体验
+---
 
-### ⚡ 交互功能
-- **一键开关**：快速启动/停止刷新
-- **实时配置**：无需重启即可调整设置
-- **键盘快捷键**：Ctrl+Shift+R 快速切换
-- **状态保存**：自动保存用户配置
+## ✨ 功能特性
 
-## 🚀 安装使用
+### 🎯 核心
+- ⏱ **可调刷新间隔** — 1 ~ 3600 秒
+- 🔢 **最大运行次数** — 0 表示无限
+- 🪟 **可拖拽 / 可最小化面板** — 不打扰主操作
+- 📊 **实时进度条** — 用 `requestAnimationFrame` 平滑渲染
+- 💾 **配置自动持久化** — 通过 `GM_setValue` 跨会话保存
 
-### 1. 安装步骤
+### 🛡 v2.0 新增
+- 🚫 **默认禁用** — 不再在所有页面主动注入面板；仅显示一个右下角浮动按钮，用户点击后才启用
+- 🔒 **敏感站点排除** — 自动跳过 `accounts.google.com`、银行、登录、结账等路径
+- ♿ **无障碍 (a11y)** — 全部控件带 `aria-label` / `role`，支持键盘聚焦与 `prefers-reduced-motion`
+- 📦 **存储 Schema 迁移** — 旧版本配置自动升级到 v2，不会丢设置
+- 🧹 **可清理定时器** — 100% cleanup，无残留 `setTimeout`
+- 🪞 **单实例保护** — SPA / 重复注入时不会创建多份面板
 
-#### 方法一：直接安装
-1. 确保已安装 [Violentmonkey](https://violentmonkey.github.io/) 浏览器扩展
-2. 点击脚本文件 `auto_refresh_script.user.js`
-3. Violentmonkey会自动弹出安装界面
-4. 点击"确认安装"
+### 🧪 技术改进
+- 集中常量（`CONFIG`、`SELECTORS`、`CSS_CLASSES`）
+- 模块化：`Logger` / `Storage` / `RefreshTimer` / `Panel` / `AutoRefreshController` / `bootstrap`
+- 零运行时依赖，~22 KB 单文件分发
+- 兼容 Violentmonkey / Tampermonkey / Greasemonkey
 
-#### 方法二：手动安装
-1. 打开Violentmonkey管理界面
-2. 点击"+"号创建新脚本
-3. 复制 `auto_refresh_script.user.js` 中的所有代码
-4. 粘贴到编辑器中并保存
+---
 
-### 2. 使用方法
+## 🚀 安装
 
-#### 基本操作
-1. **启动脚本**：访问任意网页，右上角会出现控制面板
-2. **开启刷新**：点击开关或"开始"按钮
-3. **配置参数**：根据需要调整刷新间隔和运行次数
-4. **选择目标**：选择刷新当前标签页或所有同域名标签页
+### 方法 1：直接安装（推荐）
+1. 安装浏览器扩展：
+   - [Violentmonkey](https://violentmonkey.github.io/)（推荐）
+   - [Tampermonkey](https://www.tampermonkey.net/)
+   - [Greasemonkey](https://www.greasespot.net/)（Firefox）
+2. 打开 [`auto_refresh_script.user.js`](./auto_refresh_script.user.js)
+3. 浏览器扩展会弹出安装确认 → 点击 **确认安装**
 
-#### 控制面板说明
+### 方法 2：手动安装
+1. 打开脚本管理器面板
+2. 新建脚本 → 粘贴文件内容 → 保存
+
+### 方法 3：从 CDN 安装
+```text
+https://raw.githubusercontent.com/U0Axuan/auto_refresh_script/main/auto_refresh_script.user.js
+```
+
+---
+
+## 📖 使用说明
+
+### 第一次使用
+v2.0 默认是 **禁用** 状态。安装后，**页面右下角**会出现一个紫色圆形刷新按钮。
+
+点击该按钮 → 启用脚本 → 出现主控制面板。
+
+### 控制面板
 ```
 ┌─────────────────────────────┐
 │  智能定时刷新器        [-] │  ← 标题栏（可拖拽）
 ├─────────────────────────────┤
 │ 状态：运行中 | 已刷新：3次   │  ← 状态信息
-│ ████████░░ 80%            │  ← 进度条
+│ ████████░░ 80%             │  ← 进度条
 ├─────────────────────────────┤
 │ 启用自动刷新        [●]    │  ← 主开关
-│ 刷新间隔（秒）  [30    ]   │  ← 时间设置
-│ 最大运行次数    [0     ]   │  ← 次数限制
+│ 刷新间隔（秒）  [30    ]   │
+│ 最大运行次数    [0     ]   │  ← 0 = 无限制
 │ 目标标签页：              │
-│ ● 当前标签页              │  ← 作用范围
-│ ○ 所有标签页（同域名）      │
+│ ● 当前标签页              │
+│ ○ 所有同域名标签页（v2.1）│
 ├─────────────────────────────┤
-│ [开始] [停止] [重置]       │  ← 操作按钮
+│ [开始] [停止] [重置]       │
 └─────────────────────────────┘
 ```
 
-## ⚙️ 配置选项
+### 操作
+| 操作 | 说明 |
+|---|---|
+| 拖拽标题栏 | 移动面板到屏幕任意位置 |
+| 点击 `[-]` | 最小化为 56×56 圆角 |
+| 切换主开关 | 立即启动 / 停止刷新 |
+| 修改配置 | 实时生效，无需重启 |
+| 点击 `重置` | 停止并清零计数 |
+| 快捷键 `Alt+R` | 快速启动 / 停止 |
 
-### 基本设置
-| 配置项 | 说明 | 默认值 | 范围 |
-|--------|------|--------|------|
-| 刷新间隔 | 两次刷新之间的时间间隔 | 30秒 | 1-3600秒 |
-| 最大运行次数 | 自动停止前的刷新次数 | 0（无限） | 0-10000次 |
-| 目标标签页 | 刷新作用的标签页范围 | 当前标签页 | 当前/同域名全部 |
-
-### 标签页模式说明
-- **当前标签页**：仅刷新脚本运行的当前页面
-- **所有标签页（同域名）**：理论上支持同域名所有标签页，但受浏览器安全限制，实际仍为当前标签页
-
-### 快捷键
-- **Ctrl+Shift+R**：快速启动/停止刷新功能
-
-## 🛡️ 权限说明
-
-脚本请求的权限及用途：
-- `GM_setValue/GM_getValue`：保存和读取用户配置
-- `GM_deleteValue`：清理配置数据
-- `GM_addStyle`：注入Material Design 3样式
-- `window.focus`：窗口焦点管理
-- `*://*/*`：在所有网站运行（可在Violentmonkey中自定义限制）
-
-## 🎯 使用场景
-
-### 适用场景
-- **监控页面**：股票价格、系统状态等需要实时更新的页面
-- **等待内容**：抢购页面、排队系统等需要及时响应的场景
-- **开发调试**：前端开发时自动刷新查看效果
-- **数据同步**：定期刷新获取最新数据的场景
-
-### 注意事项
-- 请合理设置刷新间隔，避免对服务器造成压力
-- 某些网站可能有反爬虫机制，频繁刷新可能被限制
-- 建议在测试环境中先验证脚本效果
-- 长时间运行时注意电脑性能和网络流量
-
-## 🔧 技术特点
-
-### 核心技术
-- **原生JavaScript**：无依赖，兼容性好
-- **Material Design 3**：最新设计规范
-- **模块化设计**：易于维护和扩展
-- **事件驱动**：响应式用户交互
-
-### 兼容性
-- **浏览器**：Chrome、Firefox、Edge、Safari等现代浏览器
-- **脚本管理器**：Violentmonkey、Tampermonkey、Greasemonkey
-- **系统平台**：Windows、macOS、Linux
-
-## 🚀 更新日志
-
-### v1.0.0 (2025-06-11)
-- ✨ 首次发布
-- 🎨 Material Design 3界面设计
-- ⚡ 完整的定时刷新功能
-- 🛠️ 可拖拽、可最小化的控制面板
-- 💾 用户配置自动保存
-- ⌨️ 键盘快捷键支持
-- 📊 实时进度条和状态显示
-
-## 📞 支持与反馈
-
-如果您在使用过程中遇到问题或有改进建议，欢迎反馈！
+> ⚠ **快捷键变更**：v1.x 的 `Ctrl+Shift+R` 与浏览器硬刷新冲突，已废弃。v2.0 改为 `Alt+R`，避开系统快捷键。
 
 ---
 
-**享受更智能的网页刷新体验！** 🎉
+## ⚙️ 配置项
+
+| 配置 | 默认 | 范围 | 说明 |
+|---|---|---|---|
+| 刷新间隔 | 30 秒 | 1-3600 | 两次刷新间等待时间 |
+| 最大运行次数 | 0（无限）| 0-10000 | 达到后自动停止 |
+| 目标标签页 | 当前 | current / same-domain | 同域名模式将在 v2.1 启用 |
+| 启用 | false | bool | 默认禁用（v2.0 行为） |
+| 最小化 | false | bool | 是否以最小化形态启动 |
+
+存储键：
+```
+refreshInterval · maxRuns · targetTab · isEnabled · isMinimized · schemaVersion
+```
+
+---
+
+## 🔐 权限说明
+
+| 权限 | 用途 | 必需 |
+|---|---|---|
+| `GM_setValue` / `GM_getValue` / `GM_deleteValue` | 跨会话保存配置 | ✅ |
+| `GM_addStyle` | （v2.0 改用 `<style>` 注入，仍保留兼容） | — |
+| `run-at document-end` | 等待主文档解析完成再注入 | ✅ |
+| `@match *://*/*` | 匹配所有 HTTP(S) 页面 | ✅ |
+| `@exclude` | 自动跳过敏感页面 | ✅ |
+| `@noframes` | 在 iframe 中不执行 | ✅ |
+
+> v1.x 申请的 `window.focus` 权限已在 v2.0 移除 — 刷新行为本身已足以让窗口前置，主动抢焦会打断用户工作。
+
+---
+
+## 🧩 架构
+
+v2.0 把单文件 IIFE 拆成 6 个内部模块（仍单文件分发，保持安装体验）：
+
+```
+┌─ CONFIG（集中常量）
+├─ Logger（带 ?refreshDebug=1 开关）
+├─ Storage（GM 封装 + schema 迁移 + clamp）
+├─ RefreshTimer（setTimeout + RAF 进度，可 cancel）
+├─ Panel（HTML 模板 + 挂载 + 触发图标）
+├─ makeDraggable（指针拖拽，鼠标 + 触屏）
+├─ AutoRefreshController（核心状态机）
+└─ bootstrap（单实例 + 默认禁用 + DOM 就绪）
+```
+
+详见 [docs/architecture.md](docs/architecture.md)。
+
+---
+
+## 🛠 开发
+
+### 仓库结构
+```
+auto_refresh_script/
+├── auto_refresh_script.user.js      ← 分发产物（单文件）
+├── README.md
+├── CHANGELOG.md
+├── LICENSE
+├── docs/
+│   ├── architecture.md              ← 模块划分 + 数据流
+│   ├── api.md                       ← JSDoc 导出的 API
+│   └── icon.svg                     ← 脚本图标
+├── src/                             ← 模块化参考实现（v2.1 计划拼接为单文件）
+├── test/
+│   └── manual-checklist.md          ← 手动验证清单
+├── .github/workflows/lint.yml       ← ESLint + Prettier CI
+├── .eslintrc.json
+├── .prettierrc.json
+└── package.json
+```
+
+### Lint（本地）
+```bash
+npm install
+npm run lint
+npm run format:check
+```
+
+### Debug
+在 URL 后加 `?refreshDebug=1` 即可打开控制台日志：
+```text
+https://example.com/page?refreshDebug=1
+```
+
+---
+
+## 🐛 已知问题 / 路线图
+
+- [ ] **v2.1** — 用 `BroadcastChannel` 真正实现"同域名所有标签页"模式
+- [ ] **v2.1** — 国际化（中 / 英）
+- [ ] **v2.2** — 暗色主题 + 主题切换
+- [ ] **v2.2** — 站点规则引擎（白 / 黑名单 URL 模式）
+- [ ] **v3.0** — 配置导入 / 导出 JSON
+- [ ] **v3.0** — 单元测试（Vitest + JSDOM）
+
+---
+
+## 🤝 贡献
+
+欢迎 Issue / PR。请先阅读 [CONTRIBUTING.md](CONTRIBUTING.md)。
+
+提交 PR 前请运行：
+```bash
+npm run lint
+npm test
+```
+
+---
+
+## 🔒 安全
+
+如发现安全漏洞，请勿公开 Issue，请按 [SECURITY.md](SECURITY.md) 流程私信报告。
+
+---
+
+## 📄 许可
+
+[MIT](LICENSE) © Axuan 薛神
+
+---
+
+## 🙏 致谢
+
+- Material Design 3 设计规范
+- Roboto 字体（Google Fonts）
+- Material Icons（Google Fonts）
+- Violentmonkey / Tampermonkey 社区
