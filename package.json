@@ -1,0 +1,34 @@
+{
+  "name": "auto-refresh-script",
+  "version": "2.0.0",
+  "private": true,
+  "description": "Material Design 3 风格的网页定时刷新器（Violentmonkey 用户脚本）",
+  "author": "Axuan 薛神 <u0axuan@gmail.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/U0Axuan/auto_refresh_script.git"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "lint": "eslint src/",
+    "lint:fix": "eslint src/ --fix",
+    "format": "prettier --write \"src/**/*.{js,json,md}\" \"*.{md,json}\"",
+    "format:check": "prettier --check \"src/**/*.{js,json,md}\" \"*.{md,json}\"",
+    "test": "node test/run.js",
+    "validate": "npm run lint && npm run format:check && npm test"
+  },
+  "devDependencies": {
+    "eslint": "^9.0.0",
+    "prettier": "^3.0.0"
+  },
+  "keywords": [
+    "userscript",
+    "violentmonkey",
+    "tampermonkey",
+    "auto-refresh",
+    "material-design"
+  ]
+}
